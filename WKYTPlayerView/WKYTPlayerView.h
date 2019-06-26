@@ -252,21 +252,21 @@ typedef NS_ENUM(NSInteger, WKYTPlayerError) {
  * the JavaScript API:
  *   https://developers.google.com/youtube/iframe_api_reference#playVideo
  */
-- (void)playVideo;
+- (void)playVideo:(void (^ __nullable)(NSString * __nullable response, NSError * __nullable error))completionHandler;
 
 /**
  * Pauses playback on a playing video. Corresponds to this method from
  * the JavaScript API:
  *   https://developers.google.com/youtube/iframe_api_reference#pauseVideo
  */
-- (void)pauseVideo;
+- (void)pauseVideo:(void (^ __nullable)(NSString * __nullable response, NSError * __nullable error))completionHandler;
 
 /**
  * Stops playback on a playing video. Corresponds to this method from
  * the JavaScript API:
  *   https://developers.google.com/youtube/iframe_api_reference#stopVideo
  */
-- (void)stopVideo;
+- (void)stopVideo:(void (^ __nullable)(NSString * __nullable response, NSError * __nullable error))completionHandler;
 
 /**
  * Seek to a given time on a playing video. Corresponds to this method from
@@ -681,14 +681,14 @@ typedef NS_ENUM(NSInteger, WKYTPlayerError) {
  * the JavaScript API:
  *   https://developers.google.com/youtube/iframe_api_reference#mute
  */
-- (void)mute;
+- (void)mute:(void (^ __nullable)(NSString * __nullable response, NSError * __nullable error))completionHandler;
 
 /**
  * Unmutes the player. Corresponds to this method from
  * the JavaScript API:
  *   https://developers.google.com/youtube/iframe_api_reference#unMute
  */
-- (void)unMute;
+- (void)unMute:(void (^ __nullable)(NSString * __nullable response, NSError * __nullable error))completionHandler;
 
 /**
  * Returns true if the player is muted, false if not.

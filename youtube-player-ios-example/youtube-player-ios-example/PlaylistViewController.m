@@ -42,11 +42,11 @@
 - (IBAction)buttonPressed:(id)sender {
   if (sender == self.playButton) {
     [[NSNotificationCenter defaultCenter] postNotificationName:@"Playback started" object:self];
-    [self.playerView playVideo];
+    [self.playerView playVideo:nil];
   } else if (sender == self.pauseButton) {
-    [self.playerView pauseVideo];
+      [self.playerView pauseVideo:nil];
   } else if (sender == self.stopButton) {
-    [self.playerView stopVideo];
+    [self.playerView stopVideo:nil];
   } else if (sender == self.nextVideoButton) {
     [self appendStatusText:@"Loading next video in playlist\n"];
     [self.playerView nextVideo];
@@ -58,7 +58,7 @@
 
 - (void)receivedPlaybackStartedNotification:(NSNotification *) notification {
   if([notification.name isEqual:@"Playback started"] && notification.object != self) {
-    [self.playerView pauseVideo];
+    [self.playerView pauseVideo:nil];
   }
 }
 

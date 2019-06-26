@@ -103,17 +103,29 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
 
 #pragma mark - Player methods
 
-- (void)playVideo {
-    [self stringFromEvaluatingJavaScript:@"player.playVideo();" completionHandler:nil];
+- (void)playVideo:(void (^ __nullable)(NSString * __nullable response, NSError * __nullable error))completionHandler {
+    [self stringFromEvaluatingJavaScript:@"player.playVideo();" completionHandler:^(NSString * _Nullable response, NSError * _Nullable error) {
+        if (completionHandler) {
+            completionHandler(response, error);
+        }
+    }];
 }
 
-- (void)pauseVideo {
+- (void)pauseVideo:(void (^ __nullable)(NSString * __nullable response, NSError * __nullable error))completionHandler {
     [self notifyDelegateOfYouTubeCallbackUrl:[NSURL URLWithString:[NSString stringWithFormat:@"ytplayer://onStateChange?data=%@", kWKYTPlayerStatePausedCode]]];
-    [self stringFromEvaluatingJavaScript:@"player.pauseVideo();" completionHandler:nil];
+    [self stringFromEvaluatingJavaScript:@"player.pauseVideo();" completionHandler:^(NSString * _Nullable response, NSError * _Nullable error) {
+        if (completionHandler) {
+            completionHandler(response, error);
+        }
+    }];
 }
 
-- (void)stopVideo {
-    [self stringFromEvaluatingJavaScript:@"player.stopVideo();" completionHandler:nil];
+- (void)stopVideo:(void (^ __nullable)(NSString * __nullable response, NSError * __nullable error))completionHandler {
+    [self stringFromEvaluatingJavaScript:@"player.stopVideo();" completionHandler:^(NSString * _Nullable response, NSError * _Nullable error) {
+        if (completionHandler) {
+            completionHandler(response, error);
+        }
+    }];
 }
 
 - (void)seekToSeconds:(float)seekToSeconds allowSeekAhead:(BOOL)allowSeekAhead {
@@ -257,8 +269,7 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
 
 #pragma mark - Setting the playback rate
 
-- (void)getPlaybackRate:(void (^ __nullable)(float playbackRate, NSError * __nullable error))completionHandler
-{
+- (void)getPlaybackRate:(void (^ __nullable)(float playbackRate, NSError * __nullable error))completionHandler {
     [self stringFromEvaluatingJavaScript:@"player.getPlaybackRate();" completionHandler:^(NSString * _Nullable response, NSError * _Nullable error) {
         if (completionHandler) {
             if (error) {
@@ -275,8 +286,7 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
     [self stringFromEvaluatingJavaScript:command completionHandler:nil];
 }
 
-- (void)getAvailablePlaybackRates:(void (^ __nullable)(NSArray * __nullable availablePlaybackRates, NSError * __nullable error))completionHandler
-{
+- (void)getAvailablePlaybackRates:(void (^ __nullable)(NSArray * __nullable availablePlaybackRates, NSError * __nullable error))completionHandler {
     [self stringFromEvaluatingJavaScript:@"player.getAvailablePlaybackRates();" completionHandler:^(NSString * _Nullable response, NSError * _Nullable error) {
         if (completionHandler) {
             if (error) {
@@ -313,21 +323,25 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
 
 #pragma mark - Playback status
 
-- (void)getVideoLoadedFraction:(void (^ __nullable)(float videoLoadedFraction, NSError * __nullable error))completionHandler
-{
+- (void)getVideoLoadedFraction:(void (^ __nullable)(float videoLoadedFraction, NSError * __nullable error))completionHandler {
     [self stringFromEvaluatingJavaScript:@"player.getVideoLoadedFraction();" completionHandler:^(NSString * _Nullable response, NSError * _Nullable error) {
         if (completionHandler) {
             if (error) {
                 completionHandler(0, error);
             } else {
-                completionHandler([response floatValue], nil);
+                if (response &&
+                    ([response isKindOfClass:[NSString class]] ||
+                     [response isKindOfClass:[NSNumber class]])) {
+                        completionHandler([response floatValue], nil);
+                    } else {
+                        completionHandler(0.0, nil);
+                    }
             }
         }
     }];
 }
 
-- (void)getPlayerState:(void (^ __nullable)(WKYTPlayerState playerState, NSError * __nullable error))completionHandler
-{
+- (void)getPlayerState:(void (^ __nullable)(WKYTPlayerState playerState, NSError * __nullable error))completionHandler {
     [self stringFromEvaluatingJavaScript:@"player.getPlayerState();" completionHandler:^(NSString * _Nullable response, NSError * _Nullable error) {
         if (completionHandler) {
             if (error) {
@@ -343,8 +357,7 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
     }];
 }
 
-- (void)getCurrentTime:(void (^ __nullable)(float currentTime, NSError * __nullable error))completionHandler
-{
+- (void)getCurrentTime:(void (^ __nullable)(float currentTime, NSError * __nullable error))completionHandler {
     [self stringFromEvaluatingJavaScript:@"player.getCurrentTime();" completionHandler:^(NSString * _Nullable response, NSError * _Nullable error) {
         if (completionHandler) {
             if (error) {
@@ -357,8 +370,7 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
 }
 
 // Playback quality
-- (void)getPlaybackQuality:(void (^ __nullable)(WKYTPlaybackQuality playbackQuality, NSError * __nullable error))completionHandler
-{
+- (void)getPlaybackQuality:(void (^ __nullable)(WKYTPlaybackQuality playbackQuality, NSError * __nullable error))completionHandler {
     [self stringFromEvaluatingJavaScript:@"player.getPlaybackQuality();" completionHandler:^(NSString * _Nullable response, NSError * _Nullable error) {
         if (completionHandler) {
             if (error) {
@@ -378,8 +390,7 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
 
 #pragma mark - Video information methods
 
-- (void)getDuration:(void (^ __nullable)(NSTimeInterval duration, NSError * __nullable error))completionHandler
-{
+- (void)getDuration:(void (^ __nullable)(NSTimeInterval duration, NSError * __nullable error))completionHandler {
     [self stringFromEvaluatingJavaScript:@"player.getDuration();" completionHandler:^(NSString * _Nullable response, NSError * _Nullable error) {
         if (completionHandler) {
             if (error) {
@@ -396,8 +407,7 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
     }];
 }
 
-- (void)getVideoUrl:(void (^ __nullable)(NSURL * __nullable videoUrl, NSError * __nullable error))completionHandler
-{
+- (void)getVideoUrl:(void (^ __nullable)(NSURL * __nullable videoUrl, NSError * __nullable error))completionHandler {
     [self stringFromEvaluatingJavaScript:@"player.getVideoUrl();" completionHandler:^(NSString * _Nullable response, NSError * _Nullable error) {
         if (completionHandler) {
             if (error) {
@@ -409,8 +419,7 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
     }];
 }
 
-- (void)getVideoEmbedCode:(void (^ __nullable)(NSString * __nullable videoEmbedCode, NSError * __nullable error))completionHandler
-{
+- (void)getVideoEmbedCode:(void (^ __nullable)(NSString * __nullable videoEmbedCode, NSError * __nullable error))completionHandler {
     [self stringFromEvaluatingJavaScript:@"player.getVideoEmbedCode();" completionHandler:^(NSString * _Nullable response, NSError * _Nullable error) {
         if (completionHandler) {
             if (error) {
@@ -424,8 +433,7 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
 
 #pragma mark - Playlist methods
 
-- (void)getPlaylist:(void (^ __nullable)(NSArray * __nullable playlist, NSError * __nullable error))completionHandler
-{
+- (void)getPlaylist:(void (^ __nullable)(NSArray * __nullable playlist, NSError * __nullable error))completionHandler {
     [self stringFromEvaluatingJavaScript:@"player.getPlaylist();" completionHandler:^(NSString * _Nullable response, NSError * _Nullable error) {
         if (completionHandler) {
             if (error) {
@@ -461,8 +469,7 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
     }];
 }
 
-- (void)getPlaylistIndex:(void (^ __nullable)(int playlistIndex, NSError * __nullable error))completionHandler
-{
+- (void)getPlaylistIndex:(void (^ __nullable)(int playlistIndex, NSError * __nullable error))completionHandler {
     [self stringFromEvaluatingJavaScript:@"player.getPlaylistIndex();" completionHandler:^(NSString * _Nullable response, NSError * _Nullable error) {
         if (completionHandler) {
             if (error) {
@@ -499,18 +506,23 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
  *   https://developers.google.com/youtube/iframe_api_reference#mute
  */
 
-- (void)mute
-{
-    [self stringFromEvaluatingJavaScript:@"player.mute();" completionHandler:nil];
+- (void)mute:(void (^ __nullable)(NSString * __nullable response, NSError * __nullable error))completionHandler {
+    [self stringFromEvaluatingJavaScript:@"player.mute();" completionHandler:^(NSString * _Nullable response, NSError * _Nullable error) {
+        if (completionHandler) {
+            completionHandler(response, error);
+        }
+    }];
 }
 
-- (void)unMute
-{
-    [self stringFromEvaluatingJavaScript:@"player.unMute();" completionHandler:nil];
+- (void)unMute:(void (^ __nullable)(NSString * __nullable response, NSError * __nullable error))completionHandler {
+    [self stringFromEvaluatingJavaScript:@"player.unMute();" completionHandler:^(NSString * _Nullable response, NSError * _Nullable error) {
+        if (completionHandler) {
+            completionHandler(response, error);
+        }
+    }];
 }
 
-- (void)isMuted:(void (^ __nullable)(BOOL isMuted, NSError * __nullable error))completionHandler
-{
+- (void)isMuted:(void (^ __nullable)(BOOL isMuted, NSError * __nullable error))completionHandler {
     [self stringFromEvaluatingJavaScript:@"player.isMuted();" completionHandler:^(NSString * _Nullable response, NSError * _Nullable error) {
         if (completionHandler) {
             if (error) {
@@ -525,8 +537,7 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
 
 #pragma mark - Helper methods
 
-- (void)getAvailableQualityLevels:(void (^ __nullable)(NSArray * __nullable availableQualityLevels, NSError * __nullable error))completionHandler
-{
+- (void)getAvailableQualityLevels:(void (^ __nullable)(NSArray * __nullable availableQualityLevels, NSError * __nullable error))completionHandler {
     [self stringFromEvaluatingJavaScript:@"player.getAvailableQualityLevels().toString();" completionHandler:^(NSString * _Nullable response, NSError * _Nullable error) {
         if (completionHandler) {
             if (error) {
@@ -545,8 +556,7 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
     }];
 }
 
-- (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler
-{
+- (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {
     NSURLRequest *request = navigationAction.request;
     
     if ([request.URL.host isEqual: self.originURL.host]) {
@@ -568,8 +578,7 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
     decisionHandler(WKNavigationActionPolicyAllow);
 }
 
-- (void)webView:(WKWebView *)webView didFailNavigation:(null_unspecified WKNavigation *)navigation withError:(NSError *)error
-{
+- (void)webView:(WKWebView *)webView didFailNavigation:(null_unspecified WKNavigation *)navigation withError:(NSError *)error {
     if (self.initialLoadingView) {
         [self.initialLoadingView removeFromSuperview];
     }
@@ -766,7 +775,7 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
     }
 }
 
-- (BOOL)handleHttpNavigationToUrl:(NSURL *) url {
+- (BOOL)handleHttpNavigationToUrl:(NSURL *)url {
     // Usually this means the user has clicked on the YouTube logo or an error message in the
     // player. Most URLs should open in the browser. The only http(s) URL that should open in this
     // UIWebView is the URL for the embed, which is of the format:
@@ -1024,7 +1033,7 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
  *
  * @param jsToExecute The JavaScript code in string format that we want to execute.
  */
-- (void)stringFromEvaluatingJavaScript:(NSString *)jsToExecute completionHandler:(void (^ __nullable)(NSString * __nullable response, NSError * __nullable error))completionHandler{
+- (void)stringFromEvaluatingJavaScript:(NSString *)jsToExecute completionHandler:(void(^ __nullable)(NSString * __nullable response, NSError * __nullable error))completionHandler {
     [self.webView evaluateJavaScript:jsToExecute completionHandler:^(NSString * _Nullable response, NSError * _Nullable error) {
         if (completionHandler) {
             completionHandler(response, error);

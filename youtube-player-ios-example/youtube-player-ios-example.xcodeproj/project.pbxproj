@@ -160,6 +160,11 @@
 			attributes = {
 				LastUpgradeCheck = 0730;
 				ORGANIZATIONNAME = "YouTube Developer Relations";
+				TargetAttributes = {
+					4D6993DD18E22E0C0073680F = {
+						DevelopmentTeam = XLF7CV9JMR;
+					};
+				};
 			};
 			buildConfigurationList = 4D6993D918E22E0C0073680F /* Build configuration list for PBXProject "youtube-player-ios-example" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -297,6 +302,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				DEVELOPMENT_TEAM = XLF7CV9JMR;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "youtube-player-ios-example/youtube-player-ios-example-Prefix.pch";
 				INFOPLIST_FILE = "youtube-player-ios-example/youtube-player-ios-example-Info.plist";
@@ -312,6 +318,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				DEVELOPMENT_TEAM = XLF7CV9JMR;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "youtube-player-ios-example/youtube-player-ios-example-Prefix.pch";
 				INFOPLIST_FILE = "youtube-player-ios-example/youtube-player-ios-example-Info.plist";
