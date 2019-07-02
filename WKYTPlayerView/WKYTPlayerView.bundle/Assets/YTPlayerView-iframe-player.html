@@ -60,6 +60,10 @@
 
     function onReady(event) {
         window.location.href = 'ytplayer://onReady?data=' + event.data;
+        
+        var styleTag = document.getElementById('player').contentDocument.createElement('style');
+        styleTag.textContent = '.html5-video-player .ytp-chrome-top { padding-top: env(safe-area-inset-top); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); } .html5-video-player .ytp-chrome-top .ytp-title-channel { padding-top: env(safe-area-inset-top); }';
+        document.getElementById('player').contentDocument.head.appendChild(styleTag);
     }
 
     function onStateChange(event) {
