@@ -1099,6 +1099,8 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
 }
 
 - (void)removeWebView {
+    [self.webView.configuration.userContentController removeAllUserScripts];
+    [self.webView.configuration.userContentController removeScriptMessageHandlerForName:@"nativeCallback"];
     [self.webView removeFromSuperview];
     self.webView = nil;
 }
