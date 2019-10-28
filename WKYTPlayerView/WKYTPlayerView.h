@@ -137,6 +137,13 @@ typedef NS_ENUM(NSInteger, WKYTPlayerError) {
  */
 - (void)playerViewIframeAPIDidFailedToLoad:(nonnull WKYTPlayerView *)playerView;
 
+/**
+ * Callback invoked when the webView did terminate because of a crash.
+ *
+ * @param playerView The WKYTPlayerView instance where the crash has occurred.
+ */
+- (void)playerViewDidTerminate:(nonnull WKYTPlayerView *)playerView;
+
 @end
 
 /**
@@ -152,6 +159,9 @@ typedef NS_ENUM(NSInteger, WKYTPlayerError) {
 
 /** A delegate to be notified on playback events. */
 @property(nonatomic, weak, nullable) id<WKYTPlayerViewDelegate> delegate;
+
+/** Stores the embed html content */
+@property (nonatomic, strong, nullable) NSString *embedHTML;
 
 /**
  * This method loads the player with the given video ID.

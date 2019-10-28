@@ -66,6 +66,7 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
 
 @property (nonatomic, strong) NSURL *originURL;
 @property (nonatomic, weak) UIView *initialLoadingView;
+@property (nonatomic) NSInteger reloadRetryCount;
 
 @end
 
@@ -547,7 +548,7 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
                 NSMutableArray *levels = [[NSMutableArray alloc] init];
                 for (NSString *rawQualityValue in rawQualityValues) {
                     WKYTPlaybackQuality quality = [WKYTPlayerView playbackQualityForString:rawQualityValue];
-                    [levels addObject:[NSNumber numberWithInt:quality]];
+                    [levels addObject:@(quality)];
                 }
 
                 completionHandler(levels, nil);
@@ -577,6 +578,19 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
 - (void)webView:(WKWebView *)webView didFailNavigation:(null_unspecified WKNavigation *)navigation withError:(NSError *)error {
     if (self.initialLoadingView) {
         [self.initialLoadingView removeFromSuperview];
+    }
+}
+
+- (void)webViewWebContentProcessDidTerminate:(WKWebView *)webView {
+    if (self.reloadRetryCount < 5 && self.embedHTML && self.originURL) {
+        [webView loadHTMLString:self.embedHTML baseURL:self.originURL];
+        [webView reload];
+        self.reloadRetryCount++;
+    } else {
+        if (self.delegate &&
+            [self.delegate respondsToSelector:@selector(playerViewDidTerminate:)]) {
+            [self.delegate playerViewDidTerminate:self];
+        }
     }
 }
 
@@ -956,9 +970,10 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
     NSString *playerVarsJsonString =
     [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
     
-    NSString *embedHTML = [NSString stringWithFormat:embedHTMLTemplate, playerVarsJsonString];
-    [self.webView loadHTMLString:embedHTML baseURL: self.originURL];
+    self.embedHTML = [NSString stringWithFormat:embedHTMLTemplate, playerVarsJsonString];
+    [self.webView loadHTMLString:self.embedHTML baseURL: self.originURL];
     self.webView.navigationDelegate = self;
+    self.reloadRetryCount = 0;
     
     if ([self.delegate respondsToSelector:@selector(playerViewPreferredInitialLoadingView:)]) {
         UIView *initialLoadingView = [self.delegate playerViewPreferredInitialLoadingView:self];
@@ -1063,7 +1078,6 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
 }
 
 - (WKWebView *)createNewWebView {
-    
     // WKWebView equivalent for UIWebView's scalesPageToFit
     // http://stackoverflow.com/questions/26295277/wkwebview-equivalent-for-uiwebviews-scalespagetofit
     NSString *jScript = @"var meta = document.createElement('meta'); meta.setAttribute('name', 'viewport'); meta.setAttribute('content', 'width=device-width, viewport-fit=cover'); document.getElementsByTagName('head')[0].appendChild(meta);";
@@ -1079,6 +1093,7 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
     
     configuration.allowsInlineMediaPlayback = YES;
     configuration.mediaPlaybackRequiresUserAction = NO;
+    configuration.websiteDataStore = [WKWebsiteDataStore defaultDataStore];
     
     WKWebView *webView = [[WKWebView alloc] initWithFrame:self.bounds configuration:configuration];
     webView.scrollView.scrollEnabled = NO;
