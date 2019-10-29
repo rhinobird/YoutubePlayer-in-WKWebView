@@ -62,9 +62,11 @@ NSString static *const kWKYTPlayerOAuthRegexPattern = @"^http(s)://accounts.goog
 NSString static *const kWKYTPlayerStaticProxyRegexPattern = @"^https://content.googleapis.com/static/proxy.html(.*)$";
 NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googlesyndication.com/sodar/(.*).html$";
 
+#define kRetryCountMax 5
+#define kAcceptedErrorCode 5
+
 @interface WKYTPlayerView()
 
-@property (nonatomic, strong) NSURL *originURL;
 @property (nonatomic, weak) UIView *initialLoadingView;
 @property (nonatomic) NSInteger reloadRetryCount;
 
@@ -136,7 +138,7 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
     [self stringFromEvaluatingJavaScript:command completionHandler:nil];
 }
 
-#pragma mark - Cueing methods
+#pragma mark - Cue Video By methods
 
 - (void)cueVideoById:(NSString *)videoId
         startSeconds:(float)startSeconds
@@ -159,27 +161,6 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
     [self stringFromEvaluatingJavaScript:command completionHandler:nil];
 }
 
-- (void)loadVideoById:(NSString *)videoId
-         startSeconds:(float)startSeconds
-     suggestedQuality:(WKYTPlaybackQuality)suggestedQuality {
-    NSNumber *startSecondsValue = [NSNumber numberWithFloat:startSeconds];
-    NSString *qualityValue = [WKYTPlayerView stringForPlaybackQuality:suggestedQuality];
-    NSString *command = [NSString stringWithFormat:@"player.loadVideoById('%@', %@, '%@');",
-                         videoId, startSecondsValue, qualityValue];
-    [self stringFromEvaluatingJavaScript:command completionHandler:nil];
-}
-
-- (void)loadVideoById:(NSString *)videoId
-         startSeconds:(float)startSeconds
-           endSeconds:(float)endSeconds
-     suggestedQuality:(WKYTPlaybackQuality)suggestedQuality {
-    NSNumber *startSecondsValue = [NSNumber numberWithFloat:startSeconds];
-    NSNumber *endSecondsValue = [NSNumber numberWithFloat:endSeconds];
-    NSString *qualityValue = [WKYTPlayerView stringForPlaybackQuality:suggestedQuality];
-    NSString *command = [NSString stringWithFormat:@"player.loadVideoById({'videoId': '%@', 'startSeconds': %@, 'endSeconds': %@, 'suggestedQuality': '%@'});",videoId, startSecondsValue, endSecondsValue, qualityValue];
-    [self stringFromEvaluatingJavaScript:command completionHandler:nil];
-}
-
 - (void)cueVideoByURL:(NSString *)videoURL
          startSeconds:(float)startSeconds
      suggestedQuality:(WKYTPlaybackQuality)suggestedQuality {
@@ -199,6 +180,51 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
     NSString *qualityValue = [WKYTPlayerView stringForPlaybackQuality:suggestedQuality];
     NSString *command = [NSString stringWithFormat:@"player.cueVideoByUrl('%@', %@, %@, '%@');",
                          videoURL, startSecondsValue, endSecondsValue, qualityValue];
+    [self stringFromEvaluatingJavaScript:command completionHandler:nil];
+}
+
+# pragma mark - Load Video By methods
+
+- (void)loadVideoById:(NSString *)videoId
+    completionHandler:(void (^ __nullable)(NSString * __nullable response, NSError * __nullable error))completionHandler {
+    [self loadVideoById:videoId
+           startSeconds:0.0
+       suggestedQuality:kWKYTPlaybackQualityMedium
+      completionHandler:^(NSString * _Nullable response, NSError * _Nullable error) {
+        if (error && error.code != kAcceptedErrorCode && self.reloadRetryCount < kRetryCountMax) {
+            [self.webView loadHTMLString:self.embedHTML baseURL:self.originURL];
+            [self loadVideoById:videoId completionHandler:completionHandler];
+        } else {
+            if (completionHandler) {
+                completionHandler(response, error);
+            }
+        }
+    }];
+}
+
+- (void)loadVideoById:(NSString *)videoId
+         startSeconds:(float)startSeconds
+     suggestedQuality:(WKYTPlaybackQuality)suggestedQuality
+    completionHandler:(void (^ __nullable)(NSString * __nullable response, NSError * __nullable error))completionHandler {
+    NSNumber *startSecondsValue = [NSNumber numberWithFloat:startSeconds];
+    NSString *qualityValue = [WKYTPlayerView stringForPlaybackQuality:suggestedQuality];
+    NSString *command = [NSString stringWithFormat:@"player.loadVideoById('%@', %@, '%@');",
+                         videoId, startSecondsValue, qualityValue];
+    [self stringFromEvaluatingJavaScript:command completionHandler:^(NSString * _Nullable response, NSError * _Nullable error) {
+        if (completionHandler) {
+            completionHandler(response, error);
+        }
+    }];
+}
+
+- (void)loadVideoById:(NSString *)videoId
+         startSeconds:(float)startSeconds
+           endSeconds:(float)endSeconds
+     suggestedQuality:(WKYTPlaybackQuality)suggestedQuality {
+    NSNumber *startSecondsValue = [NSNumber numberWithFloat:startSeconds];
+    NSNumber *endSecondsValue = [NSNumber numberWithFloat:endSeconds];
+    NSString *qualityValue = [WKYTPlayerView stringForPlaybackQuality:suggestedQuality];
+    NSString *command = [NSString stringWithFormat:@"player.loadVideoById({'videoId': '%@', 'startSeconds': %@, 'endSeconds': %@, 'suggestedQuality': '%@'});",videoId, startSecondsValue, endSecondsValue, qualityValue];
     [self stringFromEvaluatingJavaScript:command completionHandler:nil];
 }
 
@@ -582,7 +608,7 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
 }
 
 - (void)webViewWebContentProcessDidTerminate:(WKWebView *)webView {
-    if (self.reloadRetryCount < 5 && self.embedHTML && self.originURL) {
+    if (self.reloadRetryCount < kRetryCountMax && self.embedHTML && self.originURL) {
         [webView loadHTMLString:self.embedHTML baseURL:self.originURL];
         [webView reload];
         self.reloadRetryCount++;

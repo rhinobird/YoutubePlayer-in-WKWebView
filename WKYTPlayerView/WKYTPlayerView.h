@@ -163,6 +163,9 @@ typedef NS_ENUM(NSInteger, WKYTPlayerError) {
 /** Stores the embed html content */
 @property (nonatomic, strong, nullable) NSString *embedHTML;
 
+/** Stores the origin URL defined */
+@property (nonatomic, strong, nullable) NSURL *originURL;
+
 /**
  * This method loads the player with the given video ID.
  * This is a convenience method for calling WKYTPlayerView::loadPlayerWithVideoId:withPlayerVars:
@@ -326,6 +329,17 @@ typedef NS_ENUM(NSInteger, WKYTPlayerError) {
     suggestedQuality:(WKYTPlaybackQuality)suggestedQuality;
 
 /**
+* Loads a given video by its video ID for playback, starting at 0.0 with
+* medium quality. Loading a video both loads it and begins playback.
+* This Method ensures a reload of 5 times if it fails.
+*
+* @param videoId A video ID to load and begin playing.
+* @param completionHandler Completion including response and error.
+*/
+- (void)loadVideoById:(nonnull NSString *)videoId
+    completionHandler:(void (^ __nullable)(NSString * __nullable response, NSError * __nullable error))completionHandler;
+
+/**
  * Loads a given video by its video ID for playback starting at the given time and with the
  * suggested quality. Loading a video both loads it and begins playback. This method
  * corresponds with its JavaScript API equivalent as documented here:
@@ -334,10 +348,12 @@ typedef NS_ENUM(NSInteger, WKYTPlayerError) {
  * @param videoId A video ID to load and begin playing.
  * @param startSeconds Time in seconds to start the video when it has loaded.
  * @param suggestedQuality WKYTPlaybackQuality value suggesting a playback quality.
+ * @param completionHandler Completion including response and error.
  */
 - (void)loadVideoById:(nonnull NSString *)videoId
          startSeconds:(float)startSeconds
-     suggestedQuality:(WKYTPlaybackQuality)suggestedQuality;
+     suggestedQuality:(WKYTPlaybackQuality)suggestedQuality
+    completionHandler:(void (^ __nullable)(NSString * __nullable response, NSError * __nullable error))completionHandler;
 
 /**
  * Loads a given video by its video ID for playback starting and ending at the given times
