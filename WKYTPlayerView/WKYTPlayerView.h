@@ -15,6 +15,8 @@
 #import <UIKit/UIKit.h>
 #import <WebKit/WebKit.h>
 
+#import <AVFoundation/AVAnimation.h>
+
 @class WKYTPlayerView;
 
 /** These enums represent the state of the current video in the player. */
@@ -160,11 +162,15 @@ typedef NS_ENUM(NSInteger, WKYTPlayerError) {
 /** A delegate to be notified on playback events. */
 @property(nonatomic, weak, nullable) id<WKYTPlayerViewDelegate> delegate;
 
-/** Stores the embed html content */
-@property (nonatomic, strong, nullable) NSString *embedHTML;
-
-/** Stores the origin URL defined */
-@property (nonatomic, strong, nullable) NSURL *originURL;
+/**
+ * This method sets the AVLayerVideoGravity and if the player should show the caption by itself.
+ * This information is needed when the player is ready to play to change the interface trought
+ * evaluate JavaScript code.
+ *
+ * @param videoGravity The AVLayerVideoGravity desired.
+ * @param showCaption BOOL to define if the player should show captions.
+ */
+- (void)setVideoGravity:(AVLayerVideoGravity _Nonnull)videoGravity showCaption:(BOOL)showCaption;
 
 /**
  * This method loads the player with the given video ID.
@@ -329,13 +335,13 @@ typedef NS_ENUM(NSInteger, WKYTPlayerError) {
     suggestedQuality:(WKYTPlaybackQuality)suggestedQuality;
 
 /**
-* Loads a given video by its video ID for playback, starting at 0.0 with
-* medium quality. Loading a video both loads it and begins playback.
-* This Method ensures a reload of 5 times if it fails.
-*
-* @param videoId A video ID to load and begin playing.
-* @param completionHandler Completion including response and error.
-*/
+ * Loads a given video by its video ID for playback, starting at 0.0 with
+ * medium quality. Loading a video both loads it and begins playback.
+ * This Method ensures a reload of 5 times if it fails.
+ *
+ * @param videoId A video ID to load and begin playing.
+ * @param completionHandler Completion including response and error.
+ */
 - (void)loadVideoById:(nonnull NSString *)videoId
     completionHandler:(void (^ __nullable)(NSString * __nullable response, NSError * __nullable error))completionHandler;
 
