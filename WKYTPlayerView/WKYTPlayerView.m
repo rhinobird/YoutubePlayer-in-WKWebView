@@ -1188,7 +1188,7 @@ NSString static *const kWKYTPlayerSyndicationRegexPattern = @"^https://tpc.googl
         cssStyleString = @".video-stream.html5-main-video { width: auto !important; height: 100vh !important; transform: translateX(-50%) !important; top: 50% !important; left: 50% !important; } ";
     }
     if (!self.showCaption) {
-        cssStyleString = [[cssStyleString mutableCopy] stringByAppendingString:@".ytp-chrome-top.ytp-show-watch-later-title.ytp-share-button-visible.ytp-show-share-title.ytp-show-cards-title { display: none !important }"];
+        cssStyleString = [[cssStyleString mutableCopy] stringByAppendingString:@".ytp-chrome-top { display: none !important }"];
     }
 
     if (![cssStyleString isEqualToString:@""]) {
